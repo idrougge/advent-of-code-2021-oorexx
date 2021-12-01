@@ -1,0 +1,20 @@
+/* Advent of code 2021, day 1, part 1+2 in Open Object REXX 5 */
+
+input = .stream~new('day01.txt')~arrayin
+
+Part1:
+n = 0
+loop with index i over input
+    n += input[i] < input[i+1]
+end
+say n
+
+Part2:
+previous = .nil
+n = 0
+loop with index i over input for input~items - 2
+    sum = input[i] + input[i+1] + input[i+2]
+    n += sum > previous
+    previous = sum
+end
+say n
