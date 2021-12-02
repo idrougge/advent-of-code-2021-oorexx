@@ -1,0 +1,23 @@
+/* Advent of code 2021, day 2, part 1+2 in Open Object REXX 5 */
+
+numeric digits 10
+input = .stream~new('day02.txt')~arrayin
+
+position = 0
+depth = 0
+aim = 0
+
+loop line over input
+    parse var line command units
+    select
+        when command = 'forward' then do
+            position += units
+            depth += aim * units
+        end
+        when command = 'up' then aim -= units
+        when command = 'down' then aim += units
+    end
+end
+
+Part1: say aim * position
+Part2: say position * depth
