@@ -1,0 +1,48 @@
+/* Advent of code 2021, day 3, part 1+2 in Open Object REXX 5 */
+
+input = .stream~new('day03.txt')~arrayin
+
+part1:
+	bits = ''
+	do i = 1 to input~firstItem~length
+	    bits = bits || most_common(input, i)
+	end
+	gamma = bits~b2x~x2d
+	epsilon = bits~translate('10','01')~b2x~x2d
+	say gamma * epsilon
+
+part2:
+	oxygen = filter_most_common(input)
+	scrubber = filter_most_common(input, .true)
+	say oxygen * scrubber
+
+exit
+
+occurences: procedure
+    use arg input, needle, position
+    length = input~items
+    output = .array~new
+    loop line over input
+        digit = line[position]
+        if digit = needle then output~append(line)
+    end
+    return output
+
+most_common: procedure
+    use arg input, position, weight = 1
+    zeros = occurences(input, 0, position)~items
+    ones = occurences(input, 1, position)~items
+    if zeros = ones then return weight
+    return zeros < ones
+
+filter_most_common: procedure
+    use arg input, least = .false
+    length = input~firstItem~length
+    needle = most_common(input, 1)
+
+    loop i = 1 to length while input~items > 1
+        needle = most_common(input, i) && least
+        input = occurences(input, needle, i)
+    end
+
+    return input~firstItem~b2x~x2d
