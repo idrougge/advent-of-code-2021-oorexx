@@ -1,0 +1,82 @@
+/* Advent of code 2021, day 4, part 1+2 in Open Object REXX 5 */
+
+stream = .stream~new('input.txt')
+numbers = stream~linein~makeArray(',')
+boards = build_boards(stream~arrayin)
+results = .queue~new
+
+
+loop number over numbers until boards~isempty
+    loop board over boards
+        call remove number, board
+        if bingo(board) then do
+            results~push(sum_board(board) * number)
+            boards~removeItem(board)
+        end
+    end
+end
+
+part1: say results~lastItem
+part1: say results~firstItem
+
+exit
+
+sum_board: procedure
+    use arg board
+    sum = 0
+    loop number over board
+        sum += number
+    end
+    return sum
+
+remove: procedure
+    use arg number_to_remove, board
+    do while board~hasItem(number_to_remove)
+        board~removeItem(number_to_remove)
+    end
+    return
+
+bingo: procedure
+    use arg board
+    return check_x(board) | check_y(board)
+
+check_x: procedure
+    use arg board
+    loop y = 1 to board~dimensions~at(1)
+        loop x = 1 to board~dimensions~at(2)
+            if board~hasIndex(y, x) then iterate y
+        end
+        return .true
+    end
+    return .false
+
+check_y: procedure
+    use arg board
+    loop x = 1 to board~dimensions~at(2)
+        loop y = 1 to board~dimensions~at(1)
+            if board~hasIndex(y, x) then iterate x
+        end
+        return .true
+    end
+    return .false
+
+build_boards: procedure
+    use arg input
+
+    boards = .array~new
+
+    loop line over input
+        if line = '' then do
+            board = .array~new(5, 5)
+            boards~append(board)
+            row_number = 1
+            iterate
+        end
+        row = line~space(1)~makeArray(' ')
+        loop with index col_number item number over row
+            board[row_number, col_number] = number
+        end
+        row_number += 1
+    end
+
+    return boards
