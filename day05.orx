@@ -1,0 +1,82 @@
+/* Advent of code 2021, day 5, part 1+2 in Open Object REXX 5 */
+
+stream = .stream~new('input.txt')
+map = .array~new(1000, 1000)
+map~fill(0)
+for_part_2 = .array~new
+
+part1:
+loop while stream~lines > 0
+    parse value stream~linein with x1','y1 ' -> ' x2','y2
+    points = generate_cardinal(x1,y1, x2,y2)
+    if points~isEmpty then for_part_2~append((x1,y1, x2,y2))
+    else call place points, map
+end
+
+say count()
+
+part2:
+loop points over for_part_2
+    points = generate_diagonal(points[1], points[2], points[3], points[4])
+    call place points, map
+end
+
+say count()
+
+exit
+
+count:
+    number = 0
+    loop point over map
+        if point > 1 then number += 1
+    end
+    return number
+
+place: procedure 
+    use strict arg points, map
+    loop point over points
+        map[point~x + 1, point~y + 1] += 1
+    end
+    return
+
+generate_cardinal: procedure
+    use strict arg x1, y1, x2, y2
+    if x1 \= x2 & y1 \= y2 then return .array~new
+    
+    horizontal = y1 = y2
+    if horizontal then do
+        start = x1
+        stop = x2
+    end
+    else do
+        start = y1
+        stop = y2
+    end
+    points = .array~new
+    loop i = start to stop by sign(stop - start)
+        if horizontal then point = .point~new(i,y1)
+        else point = .point~new(x1,i)
+        points~append(point)
+    end
+    return points
+
+generate_diagonal: procedure
+    use strict arg x1, y1, x2, y2
+    if x1 = x2 | y1 = y2 then return .array~new
+
+    points = .array~new
+    y = y1
+    dy = sign(y2 - y1)
+    loop x = x1 to x2 by sign(x2 - x1)
+        points~append(.point~new(x,y))
+        y += dy
+    end
+    return points
+
+
+::class point
+    ::method x attribute
+    ::method y attribute
+    ::method init
+        expose x y
+        use strict arg x,y
