@@ -1,0 +1,60 @@
+do i = 17 to 19
+say i':'
+say i '// 6 =' i // 6
+say '6 //' i '=' 6 // i
+say i '% 6  =' i % 6
+say '6 %' i ' =' 6 % i
+end
+exit
+
+generations_in_days: procedure
+use arg days_left
+generations_left = days_left % 6
+return generations_left
+
+input = .stream~new('input.txt')~linein
+fish = .array~new()
+loop while input <> ''
+    parse var input nr ',' input
+    fish~append(nr)
+end
+--say fish
+iterations = 256
+spawn = 0
+loop n = iterations to 1 by -1
+    day = iterations - n + 1
+    say 'day' day
+    loop with index i item nr over fish
+        nr -= 1
+        if nr < 0 then do
+            --say 6 // iterations
+            --fish~append(8)
+            --fish~remove(i)
+            spawn += breed(n, 1)
+            nr = 6
+        end
+        fish[i] = nr
+    end
+    --say 'day' day 'spawn:' spawn
+end
+say fish~items '+' spawn '=' fish~items + spawn
+exit
+
+breed: procedure
+use strict arg iterations, depth
+nr = 8 + 1
+spawn = 1
+--say 'After' 18 - iterations + 1 'days'
+--say 'breed' depth':' iterations 'iterations'
+if iterations < 8 then return spawn
+loop n = 1 to iterations
+    nr -= 1
+    if nr < 0 then do
+        --say 'breed' depth': loop' n
+        nr = 6
+        --spawn += 1
+        spawn += breed(iterations - n + 1, depth + 1)
+    end
+end
+--say 'breed' depth':' spawn 'spawn'
+return spawn
