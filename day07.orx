@@ -1,0 +1,33 @@
+/* Advent of code 2021, day 7, part 1+2 in Open Object REXX 5 */
+
+input = .stream~new('input.txt')~linein~makeArray(',')~sort
+
+lowest = input~firstItem
+highest = input~lastItem
+
+all_distances = .set~new
+all_fuel = .set~new
+
+loop i = lowest to highest
+    total_distance = 0
+    total_fuel = 0
+    loop position over input
+        distance = abs(i - position)
+        total_distance += distance
+        total_fuel += fuel(distance)
+    end
+    all_distances~put(total_distance)
+    all_fuel~put(total_fuel)
+end
+
+part1: say all_distances~makeArray~sort~firstItem
+part2: say all_fuel~makeArray~sort~firstItem
+exit
+
+fuel: procedure -- Could use a LUT for higher speed.
+    arg steps
+    acc = 0
+    loop i = 1 to steps
+        acc += i
+    end
+    return acc
