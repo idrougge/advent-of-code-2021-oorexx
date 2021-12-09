@@ -1,0 +1,87 @@
+/* Advent of code 2021, day 8, part 1+2 in Open Object REXX 5 */
+
+lines = .stream~new('input.txt')~makeArray
+
+part_1:
+sum = 0
+loop line over lines
+    sum += find_2347(line)
+end
+say sum
+
+part_2:
+
+pattern.0 = 'abc efg' --
+                      --   0:      1:      2:      3:      4:
+pattern.1 = '  c  f ' --  aaaa    ....    aaaa    aaaa    ....
+                      -- b    c  .    c  .    c  .    c  b    c
+pattern.2 = 'a cde g' -- b    c  .    c  .    c  .    c  b    c
+                      --  ....    ....    dddd    dddd    dddd
+pattern.3 = 'a cd fg' -- e    f  .    f  e    .  .    f  .    f
+                      -- e    f  .    f  e    .  .    f  .    f
+pattern.4 = ' bcd f ' --  gggg    ....    gggg    gggg    ....
+                      -- 
+pattern.5 = 'ab d fg' --   5:      6:      7:      8:      9:
+                      --  aaaa    aaaa    aaaa    aaaa    aaaa
+pattern.6 = 'ab defg' -- b    .  b    .  .    c  b    c  b    c
+                      -- b    .  b    .  .    c  b    c  b    c
+pattern.7 = 'a c  f ' --  dddd    dddd    ....    dddd    dddd
+                      -- .    f  e    f  .    f  e    f  .    f
+pattern.8 = 'abcdefg' -- .    f  e    f  .    f  e    f  .    f
+                      --  gggg    gggg    ....    gggg    gggg
+pattern.9 = 'abcd fg' --
+
+valid_bit_values = .set~new
+loop with index i item pattern over pattern.
+    bits = string_to_number(pattern~space(0), 'abcdefg')
+    valid_bit_values~put(bits)
+    bit_values.bits = i
+end
+
+call make_permutations
+
+sum = 0
+loop line over lines
+    parse var line input ' | ' output
+    output = output~makeArray(' ')
+    input = input~makeArray(' ')
+    loop permutation over permutations.
+        loop word over input
+            number = string_to_number(word, permutation)
+            if \valid_bit_values~hasItem(number) then iterate permutation
+        end
+        output_sum = ''
+        loop word over output
+            bits = string_to_number(word, permutation)
+            output_sum = output_sum || bit_values.bits
+        end
+        sum += output_sum
+    end
+end
+say sum
+exit
+
+make_permutations: procedure expose permutations.
+    use strict arg prefix = '', string = 'abcdefg'
+    if string = '' then permutations.prefix = prefix~translate(prefix, 'abcdefg')
+    else do i = 1 to string~length
+        call make_permutations prefix || string~substr(i, 1), string~left(i - 1) || string~substr(i + 1)
+    end
+    return
+
+string_to_number: procedure
+    use strict arg input, table
+    bits = '40201008040201'x
+    sum = '0'x
+    loop char over input~translate(bits, table)~makeArray('')
+        sum = sum~bitor(char)
+    end
+    return sum~c2d
+
+find_2347: procedure
+    parse arg . ' | ' output
+    sum = 0
+    loop i = 1 for output~words
+        sum += (output~wordlength(i) \= 5 & output~wordlength(i) \= 6)
+    end
+    return sum
