@@ -1,0 +1,89 @@
+/* Advent of code 2021, day 9, part 1+2 in Open Object REXX 5 */
+input = .stream~new('input.txt')~arrayin
+map = .array~new
+
+loop with index y item line over input
+    loop with index x item point over line~makeArray('')
+        map[x+1, y+1] = point
+    end
+end
+
+width = map~dimension(1)
+height = map~dimension(2)
+
+call add_borders map, width, height
+
+part_1:
+sum = 0
+loop y = 2 to height
+    loop x = 2 to width
+        n = map[x, y-1] 
+        s = map[x, y+1] 
+        v = map[x-1, y] 
+        o = map[x+1, y] 
+        point = map[x,y]
+        if point < n & point < s & point < o & point < v 
+        then sum += (point + 1)
+    end
+end
+say sum
+
+part_2:
+call convert_to_boolean_array map
+areas = traverse_and_fill()
+areas~sortWith(.invertingComparator~new(.numericComparator~new))
+say areas[1] * areas[2] * areas[3]
+exit
+
+traverse_and_fill: procedure expose map
+    areas = .array~new
+    loop y = 1 to map~dimension(2)
+        loop x = 1 to map~dimension(1)
+            filled = fill(x, y)
+            if filled > 0 then areas~append(filled)
+        end x
+    end y
+    return areas
+
+fill: procedure expose map
+    use strict arg x, y
+    if map[x,y] then return 0
+    map[x,y] = .true
+    filled = .true
+    filled += fill(x, y+1)
+    filled += fill(x, y-1)
+    filled += fill(x-1, y)
+    filled += fill(x+1, y)
+    return filled
+
+convert_to_boolean_array: procedure
+    use arg map
+    loop y = 1 to map~dimension(2)
+        loop x = 1 to map~dimension(1)
+            map[x,y] = map[x,y] == 9
+        end
+    end
+    return map
+
+add_borders: procedure
+    use strict arg map, width, height
+    loop x = 1 to map~dimension(1)
+        map[x, 1] = 9
+        map[x, height + 1] = 9
+    end
+    loop y = 1 to map~dimension(2)
+        map[1, y] = 9
+        map[width + 1, y] = 9
+    end
+    return
+
+show: procedure
+    use arg map
+    loop y = 1 to map~dimension(2)
+        line = ''
+        loop x = 1 to map~dimension(1)
+            line = line || map[x,y]
+        end
+        say line
+    end
+    return
