@@ -1,0 +1,64 @@
+/* Advent of code 2021, day 10, part 1+2 in Open Object REXX 5 */
+numeric digits 12
+input = .stream~new('input.txt')~arrayin
+
+part_1:
+sum = 0
+loop line over input
+    select case test1(line)
+    when ')' then sum += 3
+    when '>' then sum += 25137
+    when '}' then sum += 1197
+    when ']' then sum += 57
+    otherwise nop
+    end
+end
+
+say sum
+
+part_2:
+sums = .array~new
+loop line over input
+    result = test2(line)
+    if result > 0 then sums~append(result)
+end
+sums~sortWith(.numericComparator~new)
+say sums[sums~items % 2 + 1]
+
+exit
+
+test1: procedure
+    use arg input
+    queue = .queue~new
+    loop char over input~makeArray('')
+        select case char
+            when '(', '<', '{', '[' then queue~push(char)
+            when ')', '>', '}', ']' then select case queue~pull || char
+                    when '()', '<>', '{}', '[]' then nop
+                    otherwise return char
+                end
+            otherwise raise halt
+        end
+    end
+    return ''
+
+test2: procedure
+    use arg input
+    queue = .queue~new
+    loop char over input~makeArray('')
+        select case char
+            when '(', '<', '{', '[' then queue~push(char)
+            when ')', '>', '}', ']' then select case queue~pull || char
+                    when '()', '<>', '{}', '[]' then nop
+                    otherwise return 0
+                end
+            otherwise raise halt
+        end
+    end
+    sum = 0
+    do while \queue~isEmpty
+        sum *= 5
+        value = queue~pull~translate('1234', '([{<')
+        sum += value
+    end
+    return sum
