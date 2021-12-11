@@ -1,0 +1,83 @@
+/* Advent of code 2021, day 11, part 1+2 in Open Object REXX 5 */
+map = .map~new
+loop with index y item line over .stream~new('input.txt')~arrayin
+    loop with index x item point over line~makeArray('')
+        map[x,y] = point
+    end
+end
+
+part_1:
+sum = 0
+do 100
+    sum += map~step
+end
+say sum
+
+part_2:
+loop counter i until map~isClear
+    map~step
+end
+say i + 100
+exit
+
+::class map subclass array
+
+::method step
+    loop i over self~allIndexes
+        self[i] += 1
+    end
+    return self~flash
+
+::method flash
+    adjacents = .array~new
+    flashed = .array~new
+    loop i over self~allIndexes
+        if self[i]~isNil then iterate
+        if self[i] > 9 then do
+            adjacents~appendAll(self~adjacent_indexes(i))
+            flashed~append(i)
+            self[i] = .nil
+        end
+    end
+    if adjacents~isEmpty then return 0
+    loop i over adjacents
+        if self[i]~isNil then iterate
+        self[i] += 1
+    end
+    found = self~flash
+    loop i over flashed
+        self[i] = 0
+    end
+    return flashed~items + found
+
+::method adjacent_indexes
+    use strict arg index
+    x = index[1]; y = index[2]
+    output = ((x-1, y-1), (x, y-1), (x+1, y-1), (x-1, y), (x+1, y), (x-1, y+1), (x, y+1), (x+1, y+1))
+    loop with index i item point over output
+        x = point[1]; y = point[2]
+        select case .true
+            when x = 0, x > self~dimension(1) then output~remove(i)
+            when y = 0, y > self~dimension(2) then output~remove(i)
+            otherwise nop
+        end
+    end
+    return output
+
+::method isClear
+    loop i over self
+        if i > 0 then return .false
+    end
+    return .true
+
+::method show
+    loop y = 1 to self~dimension(2)
+        line = ''
+        loop x = 1 to self~dimension(1)
+            if self[x,y]~isNil
+            then line = line || '-'
+            else line = line || self[x,y]~d2x
+        end
+        say line
+    end
+    return
