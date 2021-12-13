@@ -1,0 +1,84 @@
+/* Advent of code 2021, day 13, part 1+2 in Open Object REXX 5 */
+paper = .paper~new
+stream = .stream~new('input.txt')
+loop
+    point = stream~linein
+    if point = '' then leave
+    parse value point with x','y
+    paper[x + 1, y + 1] = .true
+end
+
+paper~prepare
+
+folds = .array~new
+loop while stream~lines > 0
+    parse value stream~linein with 'fold along ' dimension '=' number
+    folds~append(dimension) -- All folds are along the centre, so the number may be discarded.
+end
+
+part_1: say paper~fold(folds~firstItem)~count
+
+part_2:
+loop instruction over folds
+    paper = paper~fold(instruction)
+end
+
+paper~show
+
+exit
+
+::class paper subclass array
+
+::method fold
+    use strict arg dimension
+    select case dimension
+        when 'x' then return self~fold_x
+        when 'y' then return self~fold_y
+    end
+
+::method fold_y
+    height = self~dimension(2) % 2
+    new = .paper~new(self~dimension(1), height)
+    loop y = 1 to height
+        loop x = 1 to new~dimension(1)
+            new[x, height - y + 1] = self[x, height + y + 1] | self[x, height - y + 1] 
+        end
+    end
+    return new
+
+::method fold_x
+    width = self~dimension(1) % 2
+    new = .paper~new(width, self~dimension(2))
+    loop y = 1 to new~dimension(2)
+        loop x = 1 to width
+            new[width - x + 1, y] = self[width + x + 1, y] | self[width - x + 1, y] 
+        end
+    end
+    return new
+
+::method prepare
+    loop y = 1 to self~dimension(2)
+        loop x = 1 to self~dimension(1)
+            if self[x, y]~isNil then self[x, y] = .false
+        end
+    end
+    return
+
+::method show
+    loop y = 1 to self~dimension(2)
+        line = ''
+        loop x = 1 to self~dimension(1)
+            if self[x,y]
+            then line = line || '#'
+            else line = line || '.'
+        end
+        say line
+    end
+    return
+
+::method count
+    sum = 0
+    loop i over self
+        sum += i
+    end
+    return sum
