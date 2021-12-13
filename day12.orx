@@ -1,0 +1,31 @@
+/* Advent of code 2021, day 12, part 1+2 in Open Object REXX 5 */
+
+stream = .stream~new('input.txt')
+relation = .relation~new
+loop while stream~lines > 0
+	parse value stream~linein with start '-' stop
+	relation[start] = stop
+	relation[stop] = start
+end
+
+part_1: say visit('start', .bag~new, 1)
+part_2: say visit('start', .bag~new, 2)
+exit
+
+visit: procedure expose relation
+use strict arg from, visited, revisits
+visited~put(from)
+found = 0
+loop path over relation~allAt(from)
+	if path = 'start' then iterate
+	if path = 'end' then do
+		found += 1
+		iterate
+	end
+	if path~dataType(lowercase), visited~hasItem(path) then do v over visited
+		if v~dataType(uppercase) then iterate
+		if visited~allAt(v)~items = revisits then iterate path
+	end
+	found += visit(path, visited~copy, revisits)
+end
+return found
