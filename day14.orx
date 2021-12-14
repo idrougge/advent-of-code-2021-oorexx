@@ -1,0 +1,53 @@
+/* Advent of code 2021, day 14, part 1+2 in Open Object REXX 5 */
+numeric digits 14
+stream = .stream~new('input.txt')
+template = stream~linein
+stream~linein -- Skip blank line
+translations. = ''
+do while stream~lines > 0
+    parse value stream~linein with pair +2 1 left 2 right ' -> ' insertion
+    translations.pair = (left||insertion, insertion||right)
+end
+
+part_1: say work(10)
+part_2: say work(40)
+exit
+
+work: procedure expose translations. template
+    use arg iterations
+    frequencies. = 0
+    frequencies.~put(1, template~right(1))
+    table = .directory~new
+    table~setMethod(unknown, .methods[unknown])
+
+    loop i = 1 to template~length - 1
+        pair = template~substr(i, 2)
+        table[pair] += 1
+    end
+
+    result = count_pairs(table, pair, iterations)
+
+    loop with index letters item count over result
+        letter = letters~left(1)
+        frequencies.letter += count
+    end
+
+    sorted = frequencies.~allItems~sortWith(.numericComparator~new)
+    return sorted~lastItem - sorted~firstItem
+
+count_pairs: procedure expose translations.
+    use strict arg table, input, iterations = 4
+    loop iterations
+        new = .directory~new
+        new~setMethod(unknown, .methods[unknown])
+        loop with index term item count over table
+            new_pairs = translations.term
+            new[new_pairs[1]] += count
+            new[new_pairs[2]] += count
+        end
+        table = new
+    end
+    return table
+
+::method unknown
+    return 0
